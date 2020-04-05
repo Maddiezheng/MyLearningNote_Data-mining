@@ -53,10 +53,10 @@ Week2
 
 什麼是關聯規則   What's the Associative Analysis?
 ---
-> *關聯分析的概念是由Agrawal et. al. （1993） 所提出，隨後，Agrawal & Srikant （1994） 進一步提出 Apriori演算法，以做為關聯法則之工具。
-> *關聯分析主要透過「支持度」（Support）與「信賴度」（Confidence）來對商品項目之間的關聯性，進行篩選。
-> *支持度（Support）意指即某項目集在資料庫中出現的次數比例。例如：某資料庫中有100筆交易紀錄，其中有20筆交易有購買啤酒，則啤酒的支持度為20%。
-> *信賴度（Confidence）意指兩個項目集之間的條件機率，也就是在A出現的情況下，B出現的機率值。
+>*關聯分析的概念是由Agrawal et. al. （1993） 所提出，隨後，Agrawal & Srikant （1994） 進一步提出 Apriori演算法，以做為關聯法則之工具。
+>*關聯分析主要透過「支持度」（Support）與「信賴度」（Confidence）來對商品項目之間的關聯性，進行篩選。
+>*支持度（Support）意指即某項目集在資料庫中出現的次數比例。例如：某資料庫中有100筆交易紀錄，其中有20筆交易有購買啤酒，則啤酒的支持度為20%。
+>*信賴度（Confidence）意指兩個項目集之間的條件機率，也就是在A出現的情況下，B出現的機率值。
 
 在電腦科學以及資料探勘領域中，Apriori 演算法是「關聯規則學習」或是「關聯分析（Associative Analysis）」的經典演算法之一，目的是在一個資料集當中，找出不同項與項之間可能存在的關係。而在行銷資料科學領域，它有個很特別的名字，被稱為「購物籃分析 (Market Basket analysis)」，也跟啤酒與尿布的故事有關。
 
@@ -144,85 +144,93 @@ names(xlist) = paste("T",c(1:5), sep = "")
 xlist
 ```
 
-#force data into transactions
-#因為在R中關聯規則使用的apriori()函數的資料格式為"transactions"，
-#因此採用as()函數強迫將list資料型態的xlist變數轉為"transactions"
-#資料格式#儲存在另一變數table14_1中
+force data into transactions
+
+因為在R中關聯規則使用的apriori()函數的資料格式為"`transactions`"，
+
+因此採用`as()函數`強迫將list資料型態的xlist變數轉為"transactions"
+
+資料格式#儲存在另一變數table14_1中
 ```R
 table14_1 = as(xlist, "transactions") #transactions的雙引號一定要加 
 ```
 
-#查看目前table14_1的內容
+查看目前table14_1的內容
 ```R
 table14_1   #只會看到摘要資訊，例如幾筆資料，幾個欄位
 ```
 
-#使用inspect()函數可以看到真正詳細資料
+使用`inspect()函數`可以看到真正詳細資料
 ```R
 inspect(table14_1)
 ```
-#"transactions"資料格式中，item先出現，transactionID後出現，欄位顛倒擺
+"transactions"資料格式中，item先出現，transactionID後出現，欄位顛倒擺
 
-
-#使用str()函數順便查看table14_1變數目前變數結構
+使用str()函數順便查看table14_1變數目前變數結構
 ```R
 str(table14_1)
 ```
 
-#*****************
-#步驟三(Step 3.) *
-#*****************
-# 開始進行資料分析(analyze data)
-# 先使用一些視覺化工具看資料輪廓generate level plots to visually inspect binary incidence matrices
 
+*步驟三(Step 3.) *開始進行資料分析(analyze data)
+
+先使用一些視覺化工具看資料輪廓generate level plots to visually inspect binary incidence matrices
+```R
 image(table14_1)    
-#透過資料密度圖查看資料密度，問一下自己這圖有很稀疏呢?還是很緊密呢?
-
+```
+透過資料密度圖查看資料密度，問一下自己這圖有很稀疏呢?還是很緊密呢?
+```R
 summary(table14_1)  
+```
 #一般統計資料，記得看density value是多少?
+
 #ANS:0.6333333  與圖一致嗎?(可以手動驗算一下)
 
+* 步驟四(Step 4.) *
 
-
-#*****************
-#步驟四(Step 4.) *
-#*****************
 # 可尋找到apriori理論方法中所提到的1-itemset(C1)
+```R
 itemFrequency(table14_1, type = "relative") #以支持度(support)呈現
 itemFrequency(table14_1, type = "absolute") #以支持數量(support count)呈現
+```
 
+這一段可以儲存這些1-itemset的支持度或者支持數量資料
+```R
+itemFreq = itemFrequency(table14_1)
+```
+每個項集transaction包含item的個數
+```R
+Size = size(table14_1)
+```
+每個item出現的次數
+```R
+itemCount = (itemFreq/sum(itemFreq)*sum(Size))
+```
 
-#這一段可以儲存這些1-itemset的支持度或者支持數量資料
-#itemFreq = itemFrequency(table14_1)
-#每個項集transaction包含item的個數
-#Size = size(table14_1)
-#每個item出現的次數
-#itemCount = (itemFreq/sum(itemFreq)*sum(Size))
+*步驟五(Step 5.) *
 
-
-
-#*****************
-#步驟五(Step 5.) *
-#*****************
 # 以長條圖(bar plot)繪製itemFrequency資料
+```R
 itemFrequencyPlot(table14_1, col = "lightgreen")         #有顏色
 itemFrequencyPlot(table14_1, support = 0.4, col = "red") #加support條件
 itemFrequencyPlot(table14_1, topN = 4, col = "lightblue")#加topN條件
+```
 
+* 步驟六(Step 6.) *
 
-
-#*****************
-#步驟六(Step 6.) *
-#*****************
 # 開始進行找出關聯規則
 # Mining Association Rules，
-#以min_supp = 0.6, min_conf = 0.6為條件計算找出規則(target = "rules")
-#規則中的前項與後項中至少都一個品項(都不能是空集合{})，
-#即規則長度為2(minlen=2)以上的才留下
+以min_supp = 0.6, min_conf = 0.6為條件計算找出規則(target = "rules")
+
+`規則中的前項與後項中至少都一個品項(都不能是空集合{})`
+
+`即規則長度為2(minlen=2)以上的才留下`
+```R
 rules_1 = apriori(table14_1, parameter = list(support = 0.6, 
                                               confidence = 0.6,
                                               minlen=2, 
                                               target = "rules"))
+                                              
 #ANS:writing ... [11 rule(s)] done [0.00s].  找到11條規則
 #使用inspect()函數查看一下有哪些關聯規則產生
 inspect(rules_1)
@@ -238,14 +246,11 @@ rules_2 = apriori(table14_1)
 #ANS:writing ... [36 rule(s)] done [0.00s].  找到36條規則
 #使用inspect()函數查看一下有哪些關聯規則產生
 inspect(rules_2)
+```
 
-
-
-#****************
-#步驟七(Step7.) *
-#****************
+* 步驟七(Step7.) *
 # 顯示所產生的關聯規則的模型結果，看規則詳細內容使用inspect()函數
-
+```R
 inspect(table14_1) # display transactions  again
 
 inspect(rules_1)   # display association rules in rules_1
@@ -256,10 +261,8 @@ inspect(rules_1)   # display association rules in rules_1
 
 inspect(rules_2)   # display association rules in rules_2
 #通常實務上不建議跑沒任何參數條件的apriori方法
+```
 
-
-
-#Ending 完成關聯規則apriori演算法R實作
 
 
 
